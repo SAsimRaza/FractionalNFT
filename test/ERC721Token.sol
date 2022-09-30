@@ -3,16 +3,16 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import "../src/Token.sol";
+import "../src/ERC721Token.sol";
 
 contract TokenTest is Test {
-    Token t;
+    ERC721Token t;
 
     function setUp() public {
-        t = new Token();
+        t = new ERC721Token();
     }
 
     function testName() public {
-        assertEq(t.name(), "Token");
+        assertEq(t.name(), "NFT Basket Token");
     }
 }
