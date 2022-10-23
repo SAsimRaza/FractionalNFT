@@ -7,13 +7,12 @@ import {ERC721URIStorage} from "@openzeppelin/contracts/token/ERC721/extensions/
 
 contract ERC721Token is ERC721URIStorage {
     uint256 public tokenIds = 1;
-
     address public marketplace;
 
     constructor(
         string memory _name,
-        string memory symbol //address _marketPlace
-    ) ERC721(_name, symbol) {
+        string memory _symbol //address _marketPlace
+    ) ERC721(_name, _symbol) {
         // marketPlace = _marketPlace;
     }
 

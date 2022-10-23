@@ -18,13 +18,23 @@ task("example", "Example task").setAction(example);
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.0",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
+    compilers: [
+      {
+        version: "0.8.0",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
       },
-    },
+      {
+        version: "^0.8.13",
+      },
+      {
+        version: "0.8.1",
+      },
+    ],
   },
   paths: {
     sources: "./src", // Use ./src rather than ./contracts as Hardhat expects
