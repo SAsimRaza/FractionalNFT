@@ -6,16 +6,19 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import "../Interfaces/IWETH.sol";
 
+import "forge-std/console2.sol";
+
 // import "lib/openzeppelin-contracts/contracts/token/ERC721/utils/ERC721Holder.sol";
-// import "../utils/console.sol";
 
 contract Vault is ERC20 {
     // address public weth;
+    bool campaignStatus;
     address public curator;
     address public token;
 
     uint256 public tokenId;
     uint256 public initialPrice;
+    uint256 public supply;
     uint256 public deadline;
 
     // mapping(address => uint256) public balance;
@@ -39,31 +42,40 @@ contract Vault is ERC20 {
         tokenId = _tokenId;
         initialPrice = _initialPrice;
         deadline = _deadline;
-        _mint(curator, _supply);
+        console2.log("Deadline is : ", deadline);
+        supply = _supply;
+        // _mint(address(this), _supply);
         IERC721(token).transferFrom(msg.sender, address(this), tokenId);
+        campaignStatus = true;
     }
 
-    function invest(uint256 _amountToInvest) external payable {
-        require(deadline >= block.timestamp, "time ended");
+    function invest(uint256 _investment) external payable {
+        require(campaignStatus && deadline >= block.timestamp, "campaign paused");
         require(
-            _amountToInvest <= initialPrice,
+            _investment <= initialPrice,
             "investment not greater than nft price"
         );
-        require(
-            msg.value == _amountToInvest,
-            "invest amount must equal to ether"
-        );
+        require(msg.value == _investment, "invest amount must equal to ether");
 
-        uint256 share = (_amountToInvest * 10000) / initialPrice;
-        // console.log("share got", share);
+        uint256 share = (_investment * 10000) / initialPrice;
+        console2.log("Share in %", share);
+        uint256 shareInTokens = (share * supply) / 10000;
+        console2.log("share In Tokens", shareInTokens);
 
-        uint256 shareInTokens = (share * totalSupply()) / 10000;
+        (bool sent, ) = payable(address(this)).call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
+        _mint(msg.sender, shareInTokens);
 
-        transferFrom(curator, msg.sender, shareInTokens);
+        if (supply == totalSupply()) {
+            campaignStatus = false;
+        }
     }
 
     function withdrawNftAmount() external {
-        require(deadline < block.timestamp, "time not ended");
+        require(
+            !campaignStatus && deadline < block.timestamp,
+            "time not ended"
+        );
         require(initialPrice <= address(this).balance);
 
         payable(msg.sender).transfer(initialPrice);
